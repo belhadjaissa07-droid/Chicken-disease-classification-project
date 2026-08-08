@@ -19,5 +19,4 @@ logging.basicConfig(
 
 logger = logging.getLogger("cnnClassifierLogger")
 # ---- Actually use the logger ----
-logger.info("heyyyy")
-print("Done.")                          # Confirms script reached the end
+                  # Confirms script reached the end
