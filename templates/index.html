@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>CNN Classifier</title>
+
+<!-- Bootstrap -->
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+>
+
+<!-- Font Awesome -->
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+
+<style>
+
+    /* ================================
+       GLOBAL
+    ================================= */
+
+    :root {
+        --primary: #3f51b5;
+        --primary-dark: #303f9f;
+        --success: #28a745;
+        --danger: #dc3545;
+        --background: #f4f6fb;
+        --card: #ffffff;
+        --border: #e1e5ee;
+        --text: #252a34;
+        --muted: #6c757d;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: var(--background);
+        color: var(--text);
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            Arial,
+            sans-serif;
+    }
+
+
+    /* ================================
+       NAVBAR
+    ================================= */
+
+    .navbar-custom {
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+        padding: 16px 0;
+    }
+
+    .navbar-brand {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary) !important;
+    }
+
+    .navbar-brand i {
+        margin-right: 8px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: #e9f7ef;
+        color: #218838;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #28a745;
+    }
+
+
+    /* ================================
+       MAIN CONTAINER
+    ================================= */
+
+    .main-container {
+        max-width: 1150px;
+        margin: 0 auto;
+        padding: 45px 20px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .page-header h1 {
+        font-size: 34px;
+        font-weight: 750;
+        margin-bottom: 10px;
+        color: #1f2937;
+    }
+
+    .page-header p {
+        color: var(--muted);
+        font-size: 16px;
+        margin: 0;
+    }
+
+
+    /* ================================
+       MAIN CARD
+    ================================= */
+
+    .classifier-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(31, 41, 55, 0.06);
+    }
+
+    .card-header-custom {
+        padding: 22px 28px;
+        border-bottom: 1px solid var(--border);
+        background: #ffffff;
+    }
+
+    .card-header-custom h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .card-header-custom p {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .card-body-custom {
+        padding: 30px;
+    }
+
+
+    /* ================================
+       GRID
+    ================================= */
+
+    .classifier-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .classifier-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+        }
+    }
+
+
+    /* ================================
+       SECTION TITLE
+    ================================= */
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 15px;
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    .section-title h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+
+    /* ================================
+       UPLOAD AREA
+    ================================= */
+
+    .upload-box {
+        position: relative;
+        min-height: 350px;
+        border: 2px dashed #cdd3e0;
+        border-radius: 12px;
+        background: #fafbfe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .upload-box:hover {
+        border-color: var(--primary);
+        background: #f8f9ff;
+    }
+
+    .upload-box.dragover {
+        border-color: var(--primary);
+        background: #eef1ff;
+    }
+
+    .upload-placeholder {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .upload-icon {
+        width: 65px;
+        height: 65px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        background: #e9ecff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 25px;
+    }
+
+    .upload-placeholder h4 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .upload-placeholder p {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .upload-placeholder small {
+        display: block;
+        margin-top: 12px;
+        color: #8a93a3;
+    }
+
+    #preview-image {
+        display: none;
+        width: 100%;
+        height: 350px;
+        object-fit: contain;
+        padding: 10px;
+    }
+
+
+    /* ================================
+       BUTTONS
+    ================================= */
+
+    .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .btn-custom {
+        height: 46px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: 0.2s ease;
+    }
+
+    .btn-upload {
+        flex: 1;
+        background: #eef1ff;
+        color: var(--primary);
+    }
+
+    .btn-upload:hover {
+        background: #dfe4ff;
+    }
+
+    .btn-predict {
+        flex: 1;
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-predict:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-predict:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-custom i {
+        margin-right: 7px;
+    }
+
+
+    /* ================================
+       RESULT PANEL
+    ================================= */
+
+    .result-panel {
+        min-height: 350px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fafbfe;
+        overflow: hidden;
+    }
+
+    .result-empty {
+        height: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 30px;
+    }
+
+    .result-empty i {
+        font-size: 42px;
+        color: #c7cdd8;
+        margin-bottom: 15px;
+    }
+
+    .result-empty h4 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .result-empty p {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0;
+    }
+
+
+    /* ================================
+       PREDICTION RESULT
+    ================================= */
+
+    .prediction-result {
+        padding: 25px;
+    }
+
+    .prediction-label {
+        color: var(--muted);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        margin-bottom: 7px;
+    }
+
+    .prediction-value {
+        font-size: 28px;
+        font-weight: 750;
+        color: var(--primary);
+        margin-bottom: 20px;
+        word-break: break-word;
+    }
+
+    .confidence-container {
+        margin-top: 15px;
+    }
+
+    .confidence-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 7px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .progress {
+        height: 9px;
+        border-radius: 20px;
+        background: #e9edf3;
+    }
+
+    .progress-bar {
+        border-radius: 20px;
+        background: var(--primary);
+    }
+
+
+    /* ================================
+       RESULT IMAGE
+    ================================= */
+
+    .result-image-container {
+        margin-top: 25px;
+        text-align: center;
+    }
+
+    .result-image-container img {
+        max-width: 100%;
+        max-height: 190px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: white;
+    }
+
+
+    /* ================================
+       JSON RESULT
+    ================================= */
+
+    .json-container {
+        margin-top: 20px;
+    }
+
+    .json-container summary {
+        cursor: pointer;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .json-container pre {
+        margin-top: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        background: #1e2430;
+        color: #e9edf3;
+        font-size: 12px;
+        overflow-x: auto;
+        text-align: left;
+    }
+
+
+    /* ================================
+       ALERT
+    ================================= */
+
+    .alert-custom {
+        display: none;
+        margin-top: 15px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+
+    /* ================================
+       LOADING
+    ================================= */
+
+    #loading {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.85);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-content {
+        text-align: center;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #e4e7ed;
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    .loading-content p {
+        color: #4b5563;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+
+    /* ================================
+       FOOTER
+    ================================= */
+
+    .footer {
+        text-align: center;
+        padding: 25px 0;
+        color: #8a93a3;
+        font-size: 13px;
+    }
+
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<!-- ================================
+     NAVBAR
+================================= -->
+
+<nav class="navbar-custom">
+    <div class="container d-flex justify-content-between align-items-center">
+
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i>
+            CNN Classifier
+        </div>
+
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            Model Online
+        </div>
+
+    </div>
+</nav>
+
+
+<!-- ================================
+     MAIN
+================================= -->
+
+<main class="main-container">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <h1>Image Classification</h1>
+
+        <p>
+            Upload an image and let the trained CNN model classify it.
+        </p>
+
+    </div>
+
+
+    <!-- CLASSIFIER CARD -->
+
+    <div class="classifier-card">
+
+        <div class="card-header-custom">
+
+            <h2>
+                <i class="fas fa-microscope mr-2"></i>
+                CNN Prediction
+            </h2>
+
+            <p>
+                Select an image and run inference using the trained model.
+            </p>
+
+        </div>
+
+
+        <div class="card-body-custom">
+
+            <div class="classifier-grid">
+
+
+                <!-- ================================
+                     LEFT : IMAGE INPUT
+                ================================= -->
+
+                <section>
+
+                    <div class="section-title">
+
+                        <i class="fas fa-image"></i>
+
+                        <h3>Input Image</h3>
+
+                    </div>
+
+
+                    <!-- Upload area -->
+
+                    <div
+                        class="upload-box"
+                        id="upload-box"
+                    >
+
+                        <div
+                            class="upload-placeholder"
+                            id="upload-placeholder"
+                        >
+
+                            <div class="upload-icon">
+
+                                <i class="fas fa-cloud-arrow-up"></i>
+
+                            </div>
+
+                            <h4>
+                                Upload an image
+                            </h4>
+
+                            <p>
+                                Click here or drag and drop an image.
+                            </p>
+
+                            <button
+                                type="button"
+                                class="btn btn-upload btn-custom"
+                                id="upload-button"
+                            >
+                                <i class="fas fa-folder-open"></i>
+                                Choose Image
+                            </button>
+
+                            <small>
+                                JPG, JPEG or PNG
+                            </small>
+
+                        </div>
+
+
+                        <img
+                            id="preview-image"
+                            alt="Selected image preview"
+                        />
+
+                    </div>
+
+
+                    <!-- Buttons -->
+
+                    <div class="button-group">
+
+                        <button
+                            type="button"
+                            class="btn btn-custom btn-upload"
+                            id="change-image"
+                        >
+                            <i class="fas fa-rotate"></i>
+                            Change
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-custom btn-predict"
+                            id="predict-button"
+                            disabled
+                        >
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            Predict
+                        </button>
+
+                    </div>
+
+
+                    <!-- Error -->
+
+                    <div
+                        id="error-message"
+                        class="alert alert-danger alert-custom"
+                    ></div>
+
+                </section>
+
+
+
+                <!-- ================================
+                     RIGHT : RESULTS
+                ================================= -->
+
+                <section>
+
+                    <div class="section-title">
+
+                        <i class="fas fa-chart-simple"></i>
+
+                        <h3>Prediction Result</h3>
+
+                    </div>
+
+
+                    <div class="result-panel">
+
+                        <!-- Empty state -->
+
+                        <div
+                            class="result-empty"
+                            id="empty-result"
+                        >
+
+                            <div>
+
+                                <i class="fas fa-circle-question"></i>
+
+                                <h4>
+                                    No prediction yet
+                                </h4>
+
+                                <p>
+                                    Upload an image and click
+                                    <strong>Predict</strong>
+                                    to see the result.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Prediction -->
+
+                        <div
+                            class="prediction-result"
+                            id="prediction-result"
+                            style="display:none;"
+                        >
+
+                            <div class="prediction-label">
+                                Predicted Class
+                            </div>
+
+                            <div
+                                class="prediction-value"
+                                id="prediction-value"
+                            >
+                                —
+                            </div>
+
+
+                            <!-- Confidence -->
+
+                            <div
+                                class="confidence-container"
+                                id="confidence-container"
+                                style="display:none;"
+                            >
+
+                                <div class="confidence-header">
+
+                                    <span>
+                                        Confidence
+                                    </span>
+
+                                    <span id="confidence-value">
+                                        0%
+                                    </span>
+
+                                </div>
+
+                                <div class="progress">
+
+                                    <div
+                                        class="progress-bar"
+                                        id="confidence-bar"
+                                        role="progressbar"
+                                        style="width:0%;"
+                                    ></div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- Result image -->
+
+                            <div
+                                class="result-image-container"
+                                id="result-image-container"
+                                style="display:none;"
+                            >
+
+                                <img
+                                    id="result-image"
+                                    alt="Prediction result"
+                                />
+
+                            </div>
+
+
+                            <!-- Raw JSON -->
+
+                            <details class="json-container">
+
+                                <summary>
+                                    View raw prediction response
+                                </summary>
+
+                                <pre id="json-result"></pre>
+
+                            </details>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        CNN Image Classification · Powered by TensorFlow
+
+    </div>
+
+</main>
+
+
+<!-- ================================
+     LOADING OVERLAY
+================================= -->
+
+<div id="loading">
+
+    <div class="loading-content">
+
+        <div class="spinner"></div>
+
+        <p>
+            Running model prediction...
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- Hidden file input -->
+
+<input
+    type="file"
+    id="file-input"
+    accept="image/png,image/jpeg,image/jpg"
+    style="display:none;"
+>
+
+
+<!-- ================================
+     JAVASCRIPT
+================================= -->
+
+<script>
+
+    /*
+    ============================================
+    CONFIGURATION
+    ============================================
+    */
+
+    const API_URL = "../predict";
+
+
+    /*
+    ============================================
+    DOM ELEMENTS
+    ============================================
+    */
+
+    const uploadBox = document.getElementById("upload-box");
+
+    const uploadButton =
+        document.getElementById("upload-button");
+
+    const changeImage =
+        document.getElementById("change-image");
+
+    const fileInput =
+        document.getElementById("file-input");
+
+    const uploadPlaceholder =
+        document.getElementById("upload-placeholder");
+
+    const previewImage =
+        document.getElementById("preview-image");
+
+    const predictButton =
+        document.getElementById("predict-button");
+
+    const loading =
+        document.getElementById("loading");
+
+    const errorMessage =
+        document.getElementById("error-message");
+
+    const emptyResult =
+        document.getElementById("empty-result");
+
+    const predictionResult =
+        document.getElementById("prediction-result");
+
+    const predictionValue =
+        document.getElementById("prediction-value");
+
+    const jsonResult =
+        document.getElementById("json-result");
+
+    const resultImage =
+        document.getElementById("result-image");
+
+    const resultImageContainer =
+        document.getElementById("result-image-container");
+
+    const confidenceContainer =
+        document.getElementById("confidence-container");
+
+    const confidenceValue =
+        document.getElementById("confidence-value");
+
+    const confidenceBar =
+        document.getElementById("confidence-bar");
+
+
+    /*
+    ============================================
+    STATE
+    ============================================
+    */
+
+    let base64Image = "";
+
+
+    /*
+    ============================================
+    FILE SELECTION
+    ============================================
+    */
+
+    uploadButton.addEventListener("click", function () {
+
+        fileInput.click();
+
+    });
+
+
+    changeImage.addEventListener("click", function () {
+
+        fileInput.click();
+
+    });
+
+
+    uploadBox.addEventListener("click", function (event) {
+
+        if (
+            event.target !== uploadButton &&
+            event.target !== changeImage
+        ) {
+            fileInput.click();
+        }
+
+    });
+
+
+    fileInput.addEventListener("change", function () {
+
+        if (this.files && this.files.length > 0) {
+
+            handleFile(this.files[0]);
+
+        }
+
+    });
+
+
+    /*
+    ============================================
+    DRAG & DROP
+    ============================================
+    */
+
+    uploadBox.addEventListener("dragover", function (event) {
+
+        event.preventDefault();
+
+        uploadBox.classList.add("dragover");
+
+    });
+
+
+    uploadBox.addEventListener("dragleave", function () {
+
+        uploadBox.classList.remove("dragover");
+
+    });
+
+
+    uploadBox.addEventListener("drop", function (event) {
+
+        event.preventDefault();
+
+        uploadBox.classList.remove("dragover");
+
+        const files = event.dataTransfer.files;
+
+        if (files.length > 0) {
+
+            handleFile(files[0]);
+
+        }
+
+    });
+
+
+    /*
+    ============================================
+    HANDLE FILE
+    ============================================
+    */
+
+    function handleFile(file) {
+
+        hideError();
+
+        if (!file.type.startsWith("image/")) {
+
+            showError(
+                "Please select a valid image file."
+            );
+
+            return;
+
+        }
+
+
+        const reader = new FileReader();
+
+
+        reader.onload = function (event) {
+
+            const imageUrl = event.target.result;
+
+
+            /*
+            Display preview
+            */
+
+            previewImage.src = imageUrl;
+
+            previewImage.style.display = "block";
+
+            uploadPlaceholder.style.display = "none";
+
+
+            /*
+            Convert image to Base64
+            */
+
+            const image = new Image();
+
+
+            image.onload = function () {
+
+                const canvas =
+                    document.createElement("canvas");
+
+                const context =
+                    canvas.getContext("2d");
+
+
+                canvas.width = image.width;
+
+                canvas.height = image.height;
+
+
+                context.drawImage(
+                    image,
+                    0,
+                    0
+                );
+
+
+                base64Image =
+                    canvas
+                        .toDataURL(
+                            "image/jpeg",
+                            0.9
+                        )
+                        .replace(
+                            /^data:image\/\w+;base64,/,
+                            ""
+                        );
+
+
+                /*
+                Enable prediction
+                */
+
+                predictButton.disabled = false;
+
+            };
+
+
+            image.src = imageUrl;
+
+        };
+
+
+        reader.readAsDataURL(file);
+
+    }
+
+
+    /*
+    ============================================
+    PREDICT BUTTON
+    ============================================
+    */
+
+    predictButton.addEventListener(
+        "click",
+        function () {
+
+            if (!base64Image) {
+
+                showError(
+                    "Please upload an image first."
+                );
+
+                return;
+
+            }
+
+
+            predict();
+
+        }
+    );
+
+
+    /*
+    ============================================
+    PREDICTION
+    ============================================
+    */
+
+    async function predict() {
+
+        hideError();
+
+        showLoading();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            image: base64Image
+                        })
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Server returned ${response.status}`
+                );
+
+            }
+
+
+            const result =
+                await response.json();
+
+
+            displayPrediction(result);
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Prediction error:",
+                error
+            );
+
+            showError(
+                "Prediction failed. Please check that the backend server is running."
+            );
+
+        }
+
+        finally {
+
+            hideLoading();
+
+        }
+
+    }
+
+
+    /*
+    ============================================
+    DISPLAY PREDICTION
+    ============================================
+    */
+
+    function displayPrediction(result) {
+
+        emptyResult.style.display = "none";
+
+        predictionResult.style.display = "block";
+
+
+        /*
+        Display raw JSON
+        */
+
+        jsonResult.textContent =
+            JSON.stringify(
+                result,
+                null,
+                2
+            );
+
+
+        /*
+        Your backend currently returns:
+
+        [
+            prediction,
+            {
+                image: "..."
+            }
+        ]
+        */
+
+        let prediction = null;
+
+        let responseImage = null;
+
+
+        if (Array.isArray(result)) {
+
+            prediction = result[0];
+
+            if (
+                result[1] &&
+                result[1].image
+            ) {
+
+                responseImage =
+                    result[1].image;
+
+            }
+
+        }
+
+        else {
+
+            prediction = result;
+
+        }
+
+
+        /*
+        Display prediction
+        */
+
+        displayPredictionValue(
+            prediction
+        );
+
+
+        /*
+        Display result image
+        */
+
+        if (
+            responseImage &&
+            responseImage.length > 10
+        ) {
+
+            resultImage.src =
+                "data:image/jpeg;base64," +
+                responseImage;
+
+            resultImageContainer.style.display =
+                "block";
+
+        }
+
+    }
+
+
+    /*
+    ============================================
+    FORMAT PREDICTION
+    ============================================
+    */
+
+    function displayPredictionValue(prediction) {
+
+        let label = "Unknown";
+
+        let confidence = null;
+
+
+        /*
+        If backend returns:
+
+        {
+            "class": "cat",
+            "confidence": 0.95
+        }
+        */
+
+        if (
+            prediction &&
+            typeof prediction === "object"
+        ) {
+
+            label =
+                prediction.class ||
+                prediction.label ||
+                prediction.prediction ||
+                prediction.name ||
+                "Unknown";
+
+
+            confidence =
+                prediction.confidence;
+
+        }
+
+
+        /*
+        If backend returns a string
+        */
+
+        else if (
+            typeof prediction === "string"
+        ) {
+
+            label = prediction;
+
+        }
+
+
+        /*
+        Display label
+        */
+
+        predictionValue.textContent =
+            label;
+
+
+        /*
+        Display confidence
+        */
+
+        if (
+            typeof confidence === "number"
+        ) {
+
+            let percentage =
+                confidence <= 1
+                    ? confidence * 100
+                    : confidence;
+
+
+            percentage =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        percentage
+                    )
+                );
+
+
+            confidenceContainer.style.display =
+                "block";
+
+
+            confidenceValue.textContent =
+                percentage.toFixed(1) + "%";
+
+
+            confidenceBar.style.width =
+                percentage + "%";
+
+        }
+
+        else {
+
+            confidenceContainer.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    /*
+    ============================================
+    LOADING
+    ============================================
+    */
+
+    function showLoading() {
+
+        loading.style.display =
+            "flex";
+
+        predictButton.disabled =
+            true;
+
+    }
+
+
+    function hideLoading() {
+
+        loading.style.display =
+            "none";
+
+        predictButton.disabled =
+            !base64Image;
+
+    }
+
+
+    /*
+    ============================================
+    ERROR HANDLING
+    ============================================
+    */
+
+    function showError(message) {
+
+        errorMessage.textContent =
+            message;
+
+        errorMessage.style.display =
+            "block";
+
+    }
+
+
+    function hideError() {
+
+        errorMessage.style.display =
+            "none";
+
+    }
+
+</script>
+```
+
+</body>
+
+</html>
