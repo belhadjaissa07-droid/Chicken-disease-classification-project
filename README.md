@@ -19,8 +19,8 @@
 
 Clone the repository
 
+https://github.com/belhadjaissa07-droid/Chicken-disease-classification-project/edit/main/README.md
 
-https://github.com/entbappy/Chicken-Disease-Classification--Project
 
 ### STEP 01- Create a conda environment after opening the repository
 
